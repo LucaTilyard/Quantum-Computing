@@ -2,6 +2,15 @@ from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from qiskit.primitives import StatevectorSampler
 import matplotlib.pyplot as plt
 
+# Take user input on what state to send.
+Transmitted_state = input("Enter the state to send (00, 01, 10, 11): ")
+Valid_states = ["00", "01", "10", "11"]
+
+if Transmitted_state not in Valid_states:
+    print("Invalid state. Try again using a state from the set {00, 01, 10, 11}.")
+    exit()
+
+print(f"Transmitted state: {Transmitted_state}")
 
 # Generate bell state.
 alice = QuantumRegister(1, 'alice')
@@ -20,8 +29,10 @@ qc.barrier()
 # 10 -> Apply Z gate
 # 01 -> Apply X gate
 # 11 -> Apply Z and X gate
-qc.z(0)
-qc.x(0)
+if Transmitted_state == "10" or Transmitted_state == "11":
+    qc.z(0)
+if Transmitted_state == "01" or Transmitted_state == "11":
+    qc.x(0)
 
 qc.barrier()
 
@@ -47,12 +58,16 @@ job = sampler.run([qc], shots=1)
 # Extract the result for the 0th pub (this example only has one pub).
 result = job.result()[0]
 
-
 # Convert into a list of bitstrings.
 bitstring = result.data.alpha.get_bitstrings(0)
-print(f"First Bit: {bitstring[0]}")
-
-# Convert into a list of bitstrings.
 bitstring2 = result.data.beta.get_bitstrings(0)
-print(f"Second Bit: {bitstring2[0]}")
 
+
+print(f"Received state: {bitstring2[0]}{bitstring[0]}")
+
+if Transmitted_state == f"{bitstring2[0]}{bitstring[0]}":
+    print(" ✅ The state was successfully transmitted.")
+else:
+    raise Exception("The state was not successfully transmitted.")
+
+exit()
